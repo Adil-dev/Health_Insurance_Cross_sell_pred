@@ -1,4 +1,4 @@
-# Health Insurance Cross Sell Prediction
+# Health Insurance Cross Sell Prediction (work in progress)
 
 Ссылка на набор данных взятых с kaggle 
 
