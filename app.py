@@ -4,13 +4,16 @@ import pandas as pd
 import flasgger
 from flasgger import Swagger
 from sklearn.preprocessing import MinMaxScaler
+from prep import prep_func
 
 
 app=Flask(__name__)
 Swagger(app)
 
 pickle_in = open("clf.pkl","rb")
-clf=pickle.load(pickle_in)
+clf = pickle.load(pickle_in)
+pickle_in_under = open("clf_unuder.pkl", "rb")
+clf_under = pickle.load(pickle_in_under)
 
 @app.route('/')
 def welcome():
@@ -80,6 +83,7 @@ def predict_note_authentication():
     print(prediction)
     return "Hello The answer is"+str(prediction)
 
+
 @app.route('/predict_file',methods=["POST"])
 def predict_note_file():
     """Upload the csv file.
@@ -97,31 +101,33 @@ def predict_note_file():
     """
 
     df = pd.read_csv(request.files.get("file"), sep=',', index_col=['id'])
-
-    va = {'> 2 Years': 2, '1-2 Year': 1, '< 1 Year': 0}
-    gen = {'Male' : 0, 'Female' : 1}
-    vg = {'Yes' : 1, 'No' : 0}
-    df['Vehicle_Age'] = df['Vehicle_Age'].map(va)
-    df['Gender'] = df['Gender'].map(gen)
-    df['Vehicle_Damage'] = df['Vehicle_Damage'].map(vg)
-
-    num_feat = ['Age', 'Vintage']
-
-    cat_feat = [
-    'Gender', 'Previously_Insured', 'Vehicle_Age', 'Vehicle_Damage',
-    'Driving_License', 'Policy_Sales_Channel', 'Region_Code'
-    ]
-
-    scl = MinMaxScaler()
-
-    num_scl = pd.DataFrame(scl.fit_transform(df[num_feat]))
-    num_scl.index = df[num_feat].index
-    num_scl.columns = df[num_feat].columns
-    X = pd.concat([num_scl, df[cat_feat]], axis=1)
-
-    prediction = clf.predict(X)
-    
+    prepprop = prep_func(df)
+    prediction = clf.predict(prepprop)
     return str(list(prediction))
+
+
+@app.route('/predict_file_under_sample',methods=["POST"])
+def predict_note_file_undersample():
+    """Upload the csv file.
+    ---
+    parameters:
+      - name: file
+        in: formData
+        type: file
+        required: true
+      
+    responses:
+        200:
+            description: The output values
+        
+    """
+
+    df = pd.read_csv(request.files.get("file"), sep=',', index_col=['id'])
+    prepprop_under = prep_func(df)
+    prediction_under = clf_under.predict(prepprop_under)
+    
+    return str(list(prediction_under))
+
 
 if __name__=='__main__':
     app.run(port=8000)
