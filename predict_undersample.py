@@ -6,7 +6,13 @@ from sklearn.preprocessing import StandardScaler
 import lightgbm as lgb
 import pickle
 from imblearn.under_sampling import RandomUnderSampler 
-stock_df = pd.read_csv('C:/Users/Adil_/testvenv/deptest/train.csv', sep=',', index_col=['id'])
+import os
+
+DATADIR = 'deptest'
+
+filename = 'train.csv'
+
+stock_df = pd.read_csv(os.path.join(DATADIR, filename), sep=',', index_col=['id'])
 
 va = {'> 2 Years': 2, '1-2 Year': 1, '< 1 Year': 0}
 gen = {'Male' : 0, 'Female' : 1}
